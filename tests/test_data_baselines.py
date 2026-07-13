@@ -143,13 +143,15 @@ def test_fisher_information_symmetric_psd(gaussian_model):
 
 def test_fisher_information_multidim():
     from wishart_process_em import (
-        TruncatedFourierBasis,
         WishartProcessModel,
+        fourier_basis,
         squared_exponential,
     )
 
-    b = TruncatedFourierBasis(4, 2, squared_exponential(0.3))
-    model = WishartProcessModel(b, num_neurons=4, rank=2)
+    b = fourier_basis(4, num_dims=2)
+    model = WishartProcessModel(
+        b, num_neurons=4, rank=2, spectral_density=squared_exponential(0.3)
+    )
     params = model.init_params(jxr.PRNGKey(0))
     fi = fisher_information(model, params, jnp.array([0.3, 0.6]))
     assert fi.shape == (2, 2)

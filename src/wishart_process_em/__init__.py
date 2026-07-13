@@ -11,9 +11,10 @@ Quickstart
 ----------
 >>> import jax.numpy as jnp, jax.random as jxr
 >>> from wishart_process_em import (
-...     TruncatedFourierBasis, WishartProcessModel, fit, squared_exponential)
->>> basis = TruncatedFourierBasis(8, 1, squared_exponential(0.2))
->>> model = WishartProcessModel(basis, num_neurons=10, rank=2, likelihood="gaussian")
+...     fourier_basis, WishartProcessModel, fit, squared_exponential)
+>>> basis = fourier_basis(max_freq=8, num_dims=1)  # a nemos FourierEval
+>>> model = WishartProcessModel(basis, num_neurons=10, rank=2,
+...                             spectral_density=squared_exponential(0.2))
 >>> params = model.init_params(jxr.PRNGKey(0))
 >>> X = jnp.linspace(0, 1, 200)
 >>> Y, _ = model.sample(jxr.PRNGKey(1), params, X)
@@ -47,7 +48,7 @@ from .baselines import (
     grand_empirical_covariance,
     ledoit_wolf_covariance,
 )
-from .basis import TruncatedFourierBasis
+from .basis import fourier_basis, fourier_feature_scale
 from .covariance import WPParams
 from .data import NeuralDataset, group_by_condition, scale_conditions
 from .diagnostics import (
@@ -77,7 +78,8 @@ __all__ = [
     "__version__",
     "enable_x64",
     # basis / kernels
-    "TruncatedFourierBasis",
+    "fourier_basis",
+    "fourier_feature_scale",
     "squared_exponential",
     "matern",
     # model

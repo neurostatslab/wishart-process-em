@@ -16,13 +16,12 @@ grating orientation mapped so that $0$ and $1$ coincide):
 ```python
 import jax.numpy as jnp, jax.random as jxr
 from wishart_process_em import (
-    TruncatedFourierBasis, WishartProcessModel, fit, squared_exponential,
+    fourier_basis, WishartProcessModel, fit, squared_exponential,
 )
 
-basis = TruncatedFourierBasis(
-    max_freq=8, num_dims=1,
-    spectral_density=squared_exponential(lengthscale=0.2),
-)
+# `fourier_basis` returns a nemos `FourierEval`; the GP smoothness is set later
+# by the `spectral_density` passed to the model.
+basis = fourier_basis(max_freq=8, num_dims=1)
 ```
 
 A smaller `lengthscale` admits higher frequencies and yields rougher covariance
@@ -37,7 +36,8 @@ draws a latent $v \sim \mathcal N(0, I_Q)$ per trial, forms $\eta = \mu(x) +
 G(x)\,v$, and (for the Gaussian model) returns $y = \eta$:
 
 ```python
-model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="gaussian")
+model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="gaussian",
+                            spectral_density=squared_exponential(lengthscale=0.2))
 
 true_params = model.init_params(jxr.PRNGKey(0))
 X = jnp.linspace(0, 1, 400)                       # 400 trials, condition in [0,1]
@@ -125,7 +125,8 @@ quasi-Monte-Carlo at every step — a stochastic-EM-style optimisation:
 
 ```python
 counts_model = WishartProcessModel(basis, num_neurons=25, rank=3,
-                                   likelihood="poisson")
+                                   likelihood="poisson",
+                                   spectral_density=squared_exponential(lengthscale=0.2))
 counts, _ = counts_model.sample(jxr.PRNGKey(2), counts_model.init_params(jxr.PRNGKey(3)), X)
 
 result = fit(counts_model, counts, X, num_steps=1000)     # uses QMC each step

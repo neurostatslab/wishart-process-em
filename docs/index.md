@@ -45,15 +45,16 @@ Requires Python ≥ 3.10. For plotting and baselines, install the extras:
 ```python
 import jax.numpy as jnp, jax.random as jxr
 from wishart_process_em import (
-    TruncatedFourierBasis, WishartProcessModel, fit, squared_exponential,
+    fourier_basis, WishartProcessModel, fit, squared_exponential,
 )
 
-# A smooth GP basis over a 1-D periodic condition (e.g. orientation).
-basis = TruncatedFourierBasis(max_freq=8, num_dims=1,
-                              spectral_density=squared_exponential(lengthscale=0.2))
+# A Fourier basis (a nemos FourierEval) over a 1-D periodic condition.
+basis = fourier_basis(max_freq=8, num_dims=1)
 
-# A Gaussian Wishart process over N=25 neurons, rank P=3.
-model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="gaussian")
+# A Gaussian Wishart process over N=25 neurons, rank P=3. The spectral density
+# sets the GP smoothness across conditions.
+model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="gaussian",
+                            spectral_density=squared_exponential(lengthscale=0.2))
 
 # Simulate some data from the generative model.
 true_params = model.init_params(jxr.PRNGKey(0))

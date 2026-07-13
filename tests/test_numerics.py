@@ -10,7 +10,8 @@ import pytest
 
 from wishart_process_em import (
     QMCLattice,
-    TruncatedFourierBasis,
+    fourier_basis,
+    fourier_feature_scale,
     matern,
     newton_minimize,
     squared_exponential,
@@ -23,33 +24,34 @@ from wishart_process_em.qmc import (
 
 
 # --------------------------------------------------------------------------- #
-# Basis / kernels
+# Basis / kernels (basis functions provided by nemos; this package adds the
+# GP spectral scaling)
 # --------------------------------------------------------------------------- #
-def test_basis_feature_shape():
-    b = TruncatedFourierBasis(6, 1, squared_exponential(0.3))
-    phi = b.features(jnp.array([0.3]))
-    assert phi.shape == (b.num_features,)
-    assert b.num_features % 2 == 0  # sine + cosine pairs
+def test_fourier_basis_shape():
+    b = fourier_basis(6, num_dims=1)
+    assert b.n_basis_funcs == 2 * (6 - 1)  # cos + sin per non-DC frequency
+    tau = fourier_feature_scale(b, squared_exponential(0.3))
+    assert tau.shape == (b.n_basis_funcs,)
 
 
-def test_basis_is_periodic():
+def test_fourier_basis_is_periodic():
     # Fourier modes have integer frequencies -> period 1 in each dimension.
-    b = TruncatedFourierBasis(5, 1, squared_exponential(0.25))
+    b = fourier_basis(5, num_dims=1)
     x = jnp.array([0.2])
-    np.testing.assert_allclose(b.features(x), b.features(x + 1.0), atol=1e-10)
+    np.testing.assert_allclose(b.evaluate(x), b.evaluate(x + 1.0), atol=1e-10)
 
 
-def test_basis_vmap_batches():
-    b = TruncatedFourierBasis(4, 2, squared_exponential(0.3))
-    X = jxr.uniform(jxr.PRNGKey(0), (10, 2))
-    feats = jax.vmap(b.features)(X)
-    assert feats.shape == (10, b.num_features)
+def test_fourier_feature_scale_decreasing():
+    # Amplitudes should decay with frequency for a squared-exponential kernel.
+    b = fourier_basis(6, num_dims=1)
+    tau = np.asarray(fourier_feature_scale(b, squared_exponential(0.3)))
+    cos_block = tau[: tau.size // 2]
+    assert np.all(np.diff(cos_block) <= 1e-12)
 
 
-def test_basis_pruning_reduces_features():
-    dense = TruncatedFourierBasis(8, 1, squared_exponential(0.5), tol=1e-8)
-    sparse = TruncatedFourierBasis(8, 1, squared_exponential(0.5), tol=1e-1)
-    assert sparse.num_features < dense.num_features
+def test_fourier_feature_scale_requires_fourier():
+    with pytest.raises(TypeError):
+        fourier_feature_scale(object(), squared_exponential(0.3))
 
 
 @pytest.mark.parametrize("density", [squared_exponential(0.3), matern(0.3, 1.5)])

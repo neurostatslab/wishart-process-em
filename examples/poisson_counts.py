@@ -25,11 +25,12 @@ import wishart_process_em as wpe
 
 
 def main() -> None:
-    basis = wpe.TruncatedFourierBasis(6, 1, wpe.squared_exponential(0.3, 1.0))
+    basis = wpe.fourier_basis(6, num_dims=1)
 
     # Strong latent scale -> clear over-dispersion -> identifiable covariance.
     model = wpe.WishartProcessModel(
-        basis, num_neurons=8, rank=2, likelihood="poisson", init_weight_scale=2.5
+        basis, num_neurons=8, rank=2, likelihood="poisson", init_weight_scale=2.5,
+        spectral_density=wpe.squared_exponential(0.3, 1.0),
     )
     true_params = model.init_params(jxr.PRNGKey(0), mean_bias=jnp.full(8, 2.5))
 

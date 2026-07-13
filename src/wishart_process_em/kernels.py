@@ -8,7 +8,8 @@ choosing a kernel / smoothness prior.
 
 These constructors return callables mapping squared angular frequency
 ``|omega|**2`` to the density value, which is exactly the interface expected by
-:class:`~wishart_process_em.basis.TruncatedFourierBasis`.
+:func:`wishart_process_em.fourier_feature_scale` and the ``spectral_density``
+argument of :class:`~wishart_process_em.model.WishartProcessModel`.
 """
 
 from __future__ import annotations

@@ -19,14 +19,14 @@ import wishart_process_em as wpe
 
 
 def main() -> None:
-    # --- A smooth GP basis over a 1-D condition in [0, 1] --------------------
-    basis = wpe.TruncatedFourierBasis(
-        max_freq=8, num_dims=1, spectral_density=wpe.squared_exponential(0.2, 1.0)
-    )
+    # --- A Fourier basis (nemos) over a 1-D condition in [0, 1] --------------
+    basis = wpe.fourier_basis(max_freq=8, num_dims=1)
 
     # --- Ground-truth Gaussian Wishart process ------------------------------
+    # The spectral density sets the GP smoothness across conditions.
     model = wpe.WishartProcessModel(
-        basis, num_neurons=12, rank=3, likelihood="gaussian"
+        basis, num_neurons=12, rank=3, likelihood="gaussian",
+        spectral_density=wpe.squared_exponential(0.2, 1.0),
     )
     true_params = model.init_params(jxr.PRNGKey(0))
 
