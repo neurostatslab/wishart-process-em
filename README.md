@@ -36,7 +36,7 @@ cd wishart-process-em
 pip install -e ".[dev]"
 ```
 
-Requires Python ≥ 3.10. For plotting and baselines, install the extras:
+Requires Python ≥ 3.12 (following [nemos](https://github.com/flatironinstitute/nemos), on which the basis functions are built). For plotting and baselines, install the extras:
 `pip install "wishart-process-em[viz]"`.
 
 ## Quickstart
@@ -91,7 +91,7 @@ See `wishart-em --help` and the [documentation](https://neurostatslab.github.io/
 
 | Component | Module | Notes |
 |---|---|---|
-| Weight-space GP basis | `basis`, `kernels` | Truncated Fourier features scaled by a kernel spectral density. |
+| Weight-space GP basis | `basis`, `kernels` | [nemos](https://github.com/flatironinstitute/nemos) `FourierEval` features scaled by a kernel spectral density. |
 | QMC integration | `qmc` | Randomised Korobov lattice → Gaussian latents. |
 | Laplace approximation | `optim` | JAX-traceable damped Newton returning the Hessian Cholesky. |
 | Observation models | `likelihoods` | Gaussian (conjugate), Poisson, negative-binomial. |
