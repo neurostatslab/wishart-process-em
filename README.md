@@ -44,15 +44,16 @@ Requires Python ≥ 3.12 (following [nemos](https://github.com/flatironinstitute
 ```python
 import jax.numpy as jnp, jax.random as jxr
 from wishart_process_em import (
-    TruncatedFourierBasis, WishartProcessModel, fit, squared_exponential,
+    fourier_basis, WishartProcessModel, fit, squared_exponential,
 )
 
-# 1. A smooth GP basis over a 1-D periodic condition (e.g. orientation).
-basis = TruncatedFourierBasis(max_freq=8, num_dims=1,
-                              spectral_density=squared_exponential(lengthscale=0.2))
+# 1. A Fourier basis (a nemos FourierEval) over a 1-D periodic condition.
+basis = fourier_basis(max_freq=8, num_dims=1)
 
-# 2. A Gaussian Wishart process over N=25 neurons, rank P=3.
-model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="gaussian")
+# 2. A Gaussian Wishart process over N=25 neurons, rank P=3. The spectral
+#    density sets the GP smoothness across conditions.
+model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="gaussian",
+                            spectral_density=squared_exponential(lengthscale=0.2))
 
 # 3. Simulate some data from the generative model.
 true_params = model.init_params(jxr.PRNGKey(0))
@@ -68,7 +69,8 @@ For **spike counts**, pass `likelihood="poisson"` (or `"negative_binomial"`):
 the latent integral is then estimated by QMC automatically.
 
 ```python
-model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="poisson")
+model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="poisson",
+                            spectral_density=squared_exponential(lengthscale=0.2))
 result = fit(model, counts, X, num_steps=1000)          # uses QMC each step
 ```
 

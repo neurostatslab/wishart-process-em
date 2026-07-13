@@ -13,7 +13,9 @@ rendered directly from the source with
 
 ## Basis and kernels
 
-::: wishart_process_em.TruncatedFourierBasis
+::: wishart_process_em.fourier_basis
+
+::: wishart_process_em.fourier_feature_scale
 
 ::: wishart_process_em.squared_exponential
 

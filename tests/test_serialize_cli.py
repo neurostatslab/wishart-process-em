@@ -7,8 +7,8 @@ import jax.random as jxr
 import numpy as np
 
 from wishart_process_em import (
-    TruncatedFourierBasis,
     WishartProcessModel,
+    fourier_basis,
     squared_exponential,
 )
 from wishart_process_em.cli import main
@@ -16,8 +16,11 @@ from wishart_process_em.serialize import load_fit, save_fit
 
 
 def _make_model(likelihood="gaussian", **kw):
-    basis = TruncatedFourierBasis(5, 1, squared_exponential(0.3, 1.0), tol=1e-4)
-    return WishartProcessModel(basis, num_neurons=5, rank=2, likelihood=likelihood, **kw)
+    basis = fourier_basis(5, num_dims=1)
+    return WishartProcessModel(
+        basis, num_neurons=5, rank=2, likelihood=likelihood,
+        spectral_density=squared_exponential(0.3, 1.0), **kw,
+    )
 
 
 def test_serialize_roundtrip_reproduces_covariance(tmp_path):

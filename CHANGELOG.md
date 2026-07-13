@@ -7,16 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **`TruncatedFourierBasis` class removed.** Models now consume a
+  [nemos](https://github.com/flatironinstitute/nemos) basis object directly
+  (e.g. `nemos.basis.FourierEval`).
+
+### Added
+
+- `fourier_basis(max_freq, num_dims=1, bounds=(0, 1))` — a thin factory returning
+  a nemos `FourierEval` with this package's defaults (unit-box bounds, no
+  intercept term).
+- `fourier_feature_scale(basis, spectral_density)` — the Gaussian-process
+  spectral scaling, exposed as a standalone helper.
+- `WishartProcessModel` gains a `spectral_density=` argument; the GP smoothness
+  scaling is applied inside the model, so any nemos evaluation basis can be used
+  (Fourier bases get the GP scaling; others use a ridge prior on raw features).
+
 ### Changed
 
-- **Fourier basis now backed by [nemos](https://github.com/flatironinstitute/nemos).**
-  `TruncatedFourierBasis` delegates frequency enumeration and sine/cosine
-  evaluation to `nemos.basis.FourierEval`, keeping only the Wishart-process
-  Gaussian-process spectral scaling. The public constructor and behaviour are
-  unchanged. Adds a `nemos>=0.2.9` dependency.
+- Fourier basis functions are now provided entirely by nemos (frequency
+  enumeration, N-D Cartesian product, sine/cosine evaluation). Adds a
+  `nemos>=0.2.9` dependency.
 - **Python requirement raised to ≥ 3.12** (to match nemos); dropped 3.10 / 3.11.
 - Unified the two grand-empirical-covariance implementations
   (`fit.grand_covariance` now reuses `baselines.grand_empirical_covariance`).
+
+### Note
+
+- The old `tol` frequency-pruning option is gone; control the number of Fourier
+  modes with `max_freq` instead.
 
 ## [0.1.0] - 2026-07-13
 

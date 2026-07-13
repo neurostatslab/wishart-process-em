@@ -28,8 +28,11 @@ def main() -> None:
     grid = np.array([[o, f] for o in orient for f in tf])  # (40, 2)
 
     # --- Ground-truth Gaussian Wishart process ------------------------------
-    basis = wpe.TruncatedFourierBasis(5, 2, wpe.squared_exponential(0.3, 1.0))
-    model = wpe.WishartProcessModel(basis, num_neurons=10, rank=3, likelihood="gaussian")
+    basis = wpe.fourier_basis(5, num_dims=2)
+    model = wpe.WishartProcessModel(
+        basis, num_neurons=10, rank=3, likelihood="gaussian",
+        spectral_density=wpe.squared_exponential(0.3, 1.0),
+    )
     true_params = model.init_params(jxr.PRNGKey(0))
 
     X = jnp.asarray(np.repeat(grid, trials_per_cond, axis=0))

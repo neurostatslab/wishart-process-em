@@ -8,26 +8,32 @@ import pytest
 
 import wishart_process_em as wpe  # noqa: F401  (import enables x64)
 from wishart_process_em import (
-    TruncatedFourierBasis,
     WishartProcessModel,
+    fourier_basis,
     squared_exponential,
 )
+
+SPECTRAL_DENSITY = squared_exponential(0.3, 1.0)
 
 
 @pytest.fixture
 def basis():
-    return TruncatedFourierBasis(6, 1, squared_exponential(0.3, 1.0), tol=1e-4)
+    return fourier_basis(6, num_dims=1)
 
 
 @pytest.fixture
 def gaussian_model(basis):
-    return WishartProcessModel(basis, num_neurons=5, rank=2, likelihood="gaussian")
+    return WishartProcessModel(
+        basis, num_neurons=5, rank=2, likelihood="gaussian",
+        spectral_density=SPECTRAL_DENSITY,
+    )
 
 
 @pytest.fixture
 def poisson_model(basis):
     return WishartProcessModel(
-        basis, num_neurons=5, rank=2, likelihood="poisson", init_weight_scale=2.0
+        basis, num_neurons=5, rank=2, likelihood="poisson", init_weight_scale=2.0,
+        spectral_density=SPECTRAL_DENSITY,
     )
 
 

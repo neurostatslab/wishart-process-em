@@ -3,8 +3,9 @@ r"""The finite-basis Wishart process model.
 This module ties together the pieces of the package into a single
 :class:`WishartProcessModel`:
 
-* a :class:`~wishart_process_em.basis.TruncatedFourierBasis` giving weight-space
-  GP priors on the mean function and covariance factors;
+* a nemos basis (e.g. :class:`nemos.basis.FourierEval`) with an optional
+  Gaussian-process spectral scaling, giving weight-space GP priors on the mean
+  function and covariance factors;
 * the covariance assembly of :mod:`wishart_process_em.covariance`
   (:math:`\Sigma(x) = L(U U^\top + \Lambda)L^\top`);
 * an observation model from :mod:`wishart_process_em.likelihoods`.
@@ -32,12 +33,13 @@ import jax
 import jax.numpy as jnp
 import jax.random as jxr
 
-from .basis import TruncatedFourierBasis
+from .basis import fourier_feature_scale
 from .covariance import (
     WPParams,
     scale_tril_from_raw,
     softplus_inverse,
 )
+from .kernels import SpectralDensity
 from .likelihoods import Likelihood, get_likelihood
 
 __all__ = ["WishartProcessModel"]
@@ -54,8 +56,10 @@ class WishartProcessModel:
 
     Parameters
     ----------
-    basis : TruncatedFourierBasis
-        Weight-space GP basis shared by the mean and covariance functions.
+    basis : nemos basis
+        A nemos evaluation basis (e.g. :class:`nemos.basis.FourierEval`, most
+        easily built with :func:`wishart_process_em.fourier_basis`) shared by the
+        mean and covariance functions.  Its features span the condition space.
     num_neurons : int
         Number of neurons ``N``.
     rank : int, optional
@@ -78,11 +82,18 @@ class WishartProcessModel:
     prior_weight_scale : float, optional
         Standard deviation of the (Gaussian) prior on the GP weights; ``1.0``
         corresponds to the standard weight-space GP prior.
+    spectral_density : Callable, optional
+        Spectral density of the desired GP kernel (see
+        :mod:`wishart_process_em.kernels`).  When given, the Fourier features are
+        scaled by :math:`\sqrt{S(2\pi k)}` so that the weight-space prior is a GP
+        with that kernel -- this is what controls smoothness across conditions.
+        Requires a Fourier ``basis``.  If ``None``, features are used unscaled
+        (a ridge prior on the raw features).
     """
 
     def __init__(
         self,
-        basis: TruncatedFourierBasis,
+        basis,
         num_neurons: int,
         rank: int = 2,
         likelihood: str | Likelihood = "gaussian",
@@ -91,6 +102,7 @@ class WishartProcessModel:
         jitter: float = 1e-5,
         init_weight_scale: float = 1.0,
         prior_weight_scale: float = 1.0,
+        spectral_density: SpectralDensity | None = None,
     ) -> None:
         if rank < 0:
             raise ValueError("rank P must be >= 0")
@@ -98,6 +110,15 @@ class WishartProcessModel:
             raise ValueError("rank=0 requires use_diagonal=True (else Sigma is zero)")
 
         self.basis = basis
+        self.num_dims = int(basis.ndim)
+        self.num_features = int(basis.n_basis_funcs)
+        self.spectral_density = spectral_density
+        self._feature_scale = (
+            fourier_feature_scale(basis, spectral_density)
+            if spectral_density is not None
+            else jnp.ones(self.num_features)
+        )
+
         self.num_neurons = int(num_neurons)
         self.rank = int(rank)
         self.likelihood: Likelihood = get_likelihood(likelihood)
@@ -106,6 +127,16 @@ class WishartProcessModel:
         self.jitter = float(jitter)
         self.init_weight_scale = float(init_weight_scale)
         self.prior_weight_scale = float(prior_weight_scale)
+
+    def _features(self, x: jnp.ndarray) -> jnp.ndarray:
+        """GP-scaled basis features at a single input ``x``, shape ``(M,)``.
+
+        Delegates evaluation to the nemos basis and applies the spectral scaling.
+        Traceable, so it composes with :func:`jax.vmap` / :func:`jax.grad`.
+        """
+        x = jnp.atleast_1d(x)
+        cols = tuple(x[d : d + 1] for d in range(self.num_dims))
+        return self._feature_scale * self.basis.evaluate(*cols)[0]
 
     # ------------------------------------------------------------------
     # Properties
@@ -138,7 +169,7 @@ class WishartProcessModel:
             Cholesky factor of the grand empirical covariance).  Only used when
             ``use_scale=True``; defaults to the identity.
         """
-        n, p, m = self.num_neurons, self.rank, self.basis.num_features
+        n, p, m = self.num_neurons, self.rank, self.num_features
         k_mean, k_fac, k_diag, k_lik = jxr.split(key, 4)
         s = self.init_weight_scale
 
@@ -164,12 +195,12 @@ class WishartProcessModel:
     # ------------------------------------------------------------------
     def mean_at(self, params: WPParams, x: jnp.ndarray) -> jnp.ndarray:
         """Latent mean predictor ``mu(x)``, shape ``(N,)``."""
-        phi = self.basis.features(x)
+        phi = self._features(x)
         return params.mean_w @ phi + params.mean_b
 
     def factor_at(self, params: WPParams, x: jnp.ndarray) -> jnp.ndarray:
         """Low-rank covariance factor ``U(x) = A(x) diag(sZ)``, shape ``(N, P)``."""
-        phi = self.basis.features(x)
+        phi = self._features(x)
         a = jnp.einsum("npm,m->np", params.factor_w, phi)  # (N, P)
         sz = jax.nn.softplus(params.log_latent_scale)  # (P,)
         return a * sz[None, :]
@@ -178,7 +209,7 @@ class WishartProcessModel:
         """Non-negative diagonal ``lambda(x)``, shape ``(N,)`` (zeros if disabled)."""
         if not self.use_diagonal:
             return jnp.zeros(self.num_neurons)
-        phi = self.basis.features(x)
+        phi = self._features(x)
         return jax.nn.softplus(params.diag_w @ phi)
 
     def scale_tril(self, params: WPParams) -> jnp.ndarray:

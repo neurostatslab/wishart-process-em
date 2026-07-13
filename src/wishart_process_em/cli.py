@@ -55,7 +55,7 @@ def _density(spec: dict):
 
 
 def cmd_fit(args) -> None:
-    from .basis import TruncatedFourierBasis
+    from .basis import fourier_basis
     from .model import WishartProcessModel
     from .serialize import save_fit
 
@@ -71,7 +71,7 @@ def cmd_fit(args) -> None:
 
     num_dims = X.shape[1] if args.num_dims is None else args.num_dims
     spec = _kernel_spec(args)
-    basis = TruncatedFourierBasis(args.max_freq, num_dims, _density(spec), tol=args.tol)
+    basis = fourier_basis(args.max_freq, num_dims)
     model = WishartProcessModel(
         basis,
         num_neurons=Y.shape[1],
@@ -79,6 +79,7 @@ def cmd_fit(args) -> None:
         likelihood=args.likelihood,
         use_diagonal=args.use_diagonal,
         use_scale=args.use_scale,
+        spectral_density=_density(spec),
     )
     print(f"Fitting {model} on {Y.shape[0]} trials ...", file=sys.stderr)
     result = fit_model(
@@ -146,7 +147,6 @@ def build_parser() -> argparse.ArgumentParser:
     f.add_argument("--variance", type=float, default=1.0)
     f.add_argument("--nu", type=float, default=1.5, help="Matern smoothness")
     f.add_argument("--max-freq", type=int, default=8)
-    f.add_argument("--tol", type=float, default=1e-5)
     f.add_argument("--num-dims", type=int, default=None,
                    help="condition dimensionality (default: infer from X)")
     f.add_argument("--use-diagonal", action="store_true")

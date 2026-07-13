@@ -8,10 +8,10 @@ import numpy as np
 
 from wishart_process_em import (
     QMCLattice,
-    TruncatedFourierBasis,
     WishartProcessModel,
     dataset_marginal_loglike,
     fit,
+    fourier_basis,
     squared_exponential,
 )
 
@@ -61,8 +61,11 @@ def test_dataset_marginal_requires_lattice_for_counts(poisson_model):
 
 
 def test_gaussian_fit_improves_and_recovers():
-    basis = TruncatedFourierBasis(6, 1, squared_exponential(0.3, 1.0), tol=1e-4)
-    model = WishartProcessModel(basis, num_neurons=6, rank=2, likelihood="gaussian")
+    basis = fourier_basis(6, num_dims=1)
+    model = WishartProcessModel(
+        basis, num_neurons=6, rank=2, likelihood="gaussian",
+        spectral_density=squared_exponential(0.3, 1.0),
+    )
     true = model.init_params(jxr.PRNGKey(0))
     X = jnp.linspace(0, 1, 600)
     Y, _ = model.sample(jxr.PRNGKey(1), true, X)
@@ -80,8 +83,11 @@ def test_gaussian_fit_improves_and_recovers():
 
 
 def test_poisson_fit_improves_objective():
-    basis = TruncatedFourierBasis(5, 1, squared_exponential(0.3, 1.0), tol=1e-4)
-    model = WishartProcessModel(basis, num_neurons=5, rank=2, likelihood="poisson", init_weight_scale=2.0)
+    basis = fourier_basis(5, num_dims=1)
+    model = WishartProcessModel(
+        basis, num_neurons=5, rank=2, likelihood="poisson", init_weight_scale=2.0,
+        spectral_density=squared_exponential(0.3, 1.0),
+    )
     true = model.init_params(jxr.PRNGKey(0), mean_bias=jnp.full(5, 2.5))
     X = jnp.linspace(0, 1, 400)
     Y, _ = model.sample(jxr.PRNGKey(1), true, X)

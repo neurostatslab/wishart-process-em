@@ -11,10 +11,9 @@ from wishart_process_em import (
     Gaussian,
     NegativeBinomial,
     Poisson,
-    TruncatedFourierBasis,
     WishartProcessModel,
+    fourier_basis,
     get_likelihood,
-    squared_exponential,
 )
 from wishart_process_em.covariance import (
     raw_from_scale_tril,
@@ -117,7 +116,7 @@ def test_covariance_is_symmetric_psd(basis, use_diagonal, use_scale):
 
 
 def test_latent_dim():
-    b = TruncatedFourierBasis(4, 1, squared_exponential(0.3))
+    b = fourier_basis(4, num_dims=1)
     assert WishartProcessModel(b, 6, rank=3).latent_dim == 3
     assert WishartProcessModel(b, 6, rank=3, use_diagonal=True).latent_dim == 9
 
@@ -144,7 +143,7 @@ def test_sample_covariance_matches_predict_cov(gaussian_model):
 
 
 def test_multidim_conditions():
-    b = TruncatedFourierBasis(4, 2, squared_exponential(0.3))
+    b = fourier_basis(4, num_dims=2)
     model = WishartProcessModel(b, num_neurons=4, rank=2)
     params = model.init_params(jxr.PRNGKey(0))
     X = jxr.uniform(jxr.PRNGKey(1), (12, 2))
