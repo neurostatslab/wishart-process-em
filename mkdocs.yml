@@ -62,5 +62,6 @@ markdown_extensions:
 
 extra_javascript:
   - javascripts/mathjax.js
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
-  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  # NOTE: the polyfill.io CDN was compromised in 2024 and must not be used.
+  # Modern browsers do not need it for MathJax 3, so it is intentionally omitted.
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
