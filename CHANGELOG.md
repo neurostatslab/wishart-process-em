@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Fourier basis now backed by [nemos](https://github.com/flatironinstitute/nemos).**
+  `TruncatedFourierBasis` delegates frequency enumeration and sine/cosine
+  evaluation to `nemos.basis.FourierEval`, keeping only the Wishart-process
+  Gaussian-process spectral scaling. The public constructor and behaviour are
+  unchanged. Adds a `nemos>=0.2.9` dependency.
+- **Python requirement raised to ≥ 3.12** (to match nemos); dropped 3.10 / 3.11.
+- Unified the two grand-empirical-covariance implementations
+  (`fit.grand_covariance` now reuses `baselines.grand_empirical_covariance`).
+
 ## [0.1.0] - 2026-07-13
 
 Initial release.

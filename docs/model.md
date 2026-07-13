@@ -90,6 +90,11 @@ differentiable parametric model whose free parameters are just the weights $w$,
 on which we place a standard-normal prior. This is exactly what makes the
 marginal-likelihood / EM inference tractable.
 
+The Fourier features themselves — frequency enumeration, the $N$-dimensional
+Cartesian product, and evaluation — are provided by
+[`nemos.basis.FourierEval`](https://nemos.readthedocs.io); this package only adds
+the Gaussian-process spectral scaling $\tau_k = \sqrt{S(2\pi k)}$.
+
 !!! note "Periodicity"
     Inputs $x$ are assumed scaled to the unit box $[0,1]^D$. Because the
     features are Fourier modes on the torus, **periodic** conditions (grating
