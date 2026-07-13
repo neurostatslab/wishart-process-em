@@ -57,7 +57,7 @@ dev = [
 Homepage = "https://github.com/neurostatslab/wishart-process-em"
 Repository = "https://github.com/neurostatslab/wishart-process-em"
 Issues = "https://github.com/neurostatslab/wishart-process-em/issues"
-"Paper (NeurIPS 2023)" = "https://arxiv.org/abs/2305.04086"
+"Paper (NeurIPS 2023)" = "https://arxiv.org/abs/2308.11824"
 
 [project.scripts]
 wishart-em = "wishart_process_em.cli:main"

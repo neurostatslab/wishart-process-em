@@ -2,7 +2,7 @@
 
 This page gives the full mathematical description of the finite-basis Wishart
 process implemented by `wishart-process-em`. It follows the model of
-[Nejatbakhsh, Garon & Williams (2023)](https://arxiv.org/abs/2305.04086)
+[Nejatbakhsh, Garon & Williams (2023)](https://arxiv.org/abs/2308.11824)
 ("Estimating Noise Correlations Across Continuous Conditions With Wishart
 Processes", *NeurIPS 2023*), with a finite Fourier-feature basis and an
 EM-style, marginal-likelihood inference in place of variational inference.
@@ -243,4 +243,4 @@ with $\varepsilon \sim \mathcal N(0, I)$.
 - Amin Nejatbakhsh, Isabel Garon, and Alex H. Williams. *Estimating Noise
   Correlations Across Continuous Conditions With Wishart Processes.* Advances in
   Neural Information Processing Systems (NeurIPS), 2023.
-  [arXiv:2305.04086](https://arxiv.org/abs/2305.04086).
+  [arXiv:2308.11824](https://arxiv.org/abs/2308.11824).
