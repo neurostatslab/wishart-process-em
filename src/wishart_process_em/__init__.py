@@ -42,12 +42,6 @@ def enable_x64() -> None:
 if _os.environ.get("WISHART_PROCESS_EM_NO_X64", "").lower() not in ("1", "true", "yes"):
     enable_x64()
 
-from .baselines import (
-    ConditionCovarianceEstimator,
-    gaussian_loglike,
-    grand_empirical_covariance,
-    ledoit_wolf_covariance,
-)
 from .basis import fourier_basis, fourier_feature_scale
 from .covariance import WPParams
 from .data import NeuralDataset, group_by_condition, scale_conditions
@@ -108,11 +102,6 @@ __all__ = [
     "NeuralDataset",
     "group_by_condition",
     "scale_conditions",
-    # baselines
-    "ConditionCovarianceEstimator",
-    "grand_empirical_covariance",
-    "ledoit_wolf_covariance",
-    "gaussian_loglike",
     # diagnostics
     "heldout_loglike",
     "fisher_information",

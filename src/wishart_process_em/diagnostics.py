@@ -12,8 +12,7 @@ from __future__ import annotations
 import jax
 import jax.numpy as jnp
 import numpy as np
-
-from .baselines import gaussian_loglike
+from scipy.linalg import solve_triangular
 
 __all__ = [
     "heldout_loglike",
@@ -97,6 +96,18 @@ def fisher_information_curve(model, params, X: jnp.ndarray) -> jnp.ndarray:
     return jax.vmap(lambda x: fisher_information(model, params, x))(X)
 
 
+def _gaussian_loglike(Y: np.ndarray, mean: np.ndarray, cov: np.ndarray) -> np.ndarray:
+    """Per-trial ``log N(y_i; mean, cov)``; ``-inf`` if ``cov`` is not PD."""
+    n = mean.shape[0]
+    try:
+        chol = np.linalg.cholesky(cov)
+    except np.linalg.LinAlgError:
+        return np.full(Y.shape[0], -np.inf)
+    sol = solve_triangular(chol, (Y - mean[None, :]).T, lower=True)
+    log_det = 2.0 * np.sum(np.log(np.diag(chol)))
+    return -0.5 * (n * np.log(2 * np.pi) + log_det + np.sum(sol**2, axis=0))
+
+
 def qda_predict(
     means: np.ndarray, covs: np.ndarray, Y: np.ndarray, jitter: float = 0.0
 ) -> np.ndarray:
@@ -106,12 +117,13 @@ def qda_predict(
     each trial in ``Y`` ``(T, N)`` to the class of highest Gaussian likelihood.
     Setting all ``covs`` equal recovers linear discriminant analysis (LDA).
     """
-    means = np.asarray(means)
-    covs = np.asarray(covs)
+    means = np.asarray(means, dtype=float)
+    covs = np.asarray(covs, dtype=float)
     Y = np.atleast_2d(np.asarray(Y, dtype=float))
-    c = means.shape[0]
+    c, n = means.shape
+    eye = jitter * np.eye(n)
     logliks = np.stack(
-        [gaussian_loglike(Y, means[k], covs[k], jitter=jitter) for k in range(c)],
+        [_gaussian_loglike(Y, means[k], covs[k] + eye) for k in range(c)],
         axis=1,
     )  # (T, C)
     return np.argmax(logliks, axis=1)

@@ -7,8 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `NeuralDataset.train_test_split` now **stratifies by condition** by default
+  (`stratify=True`): each condition contributes `round(test_frac * K_c)` test
+  trials, so no condition is starved of training trials. Pass `stratify=False`
+  for the previous global random split.
+
 ### Removed
 
+- **Classical baseline estimators moved out of the package into
+  `examples/baselines.py`.** The empirical / grand / Ledoit-Wolf /
+  weighted-average covariance estimators, `ConditionCovarianceEstimator`, and
+  `gaussian_loglike` are comparison code, not part of the Wishart process model,
+  and are no longer importable from `wishart_process_em`. The example version of
+  Ledoit-Wolf is guaranteed positive-definite (sklearn's shrinkage can collapse
+  to 0 on tiny samples, previously giving `-inf` held-out log-likelihood).
+  `grand_covariance` (used for scale-matrix initialisation) remains in the
+  package.
+- Removed the `gratings_interpolation.py` example.
 - **`TruncatedFourierBasis` class removed.** Models now consume a
   [nemos](https://github.com/flatironinstitute/nemos) basis object directly
   (e.g. `nemos.basis.FourierEval`).

@@ -14,6 +14,7 @@ from __future__ import annotations
 import jax.numpy as jnp
 import jax.random as jxr
 import numpy as np
+from baselines import ConditionCovarianceEstimator
 
 import wishart_process_em as wpe
 
@@ -61,7 +62,7 @@ def main() -> None:
     print("\nHeld-out log-likelihood per trial (higher is better):")
     print(f"  Wishart process     {wp_ll:8.3f}")
     for method in ["grand", "ledoit_wolf", "weighted_average"]:
-        est = wpe.ConditionCovarianceEstimator(method, alpha=0.5).fit(train.Y, train.X)
+        est = ConditionCovarianceEstimator(method, alpha=0.5).fit(train.Y, train.X)
         ll = np.mean(est.loglike(test.Y, test.X))
         print(f"  {method:18s} {ll:8.3f}")
 

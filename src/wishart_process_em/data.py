@@ -184,14 +184,41 @@ class NeuralDataset:
 
     # -- splitting --------------------------------------------------------
     def train_test_split(
-        self, test_frac: float = 0.2, seed: int = 0
+        self, test_frac: float = 0.2, seed: int = 0, stratify: bool = True
     ) -> tuple[NeuralDataset, NeuralDataset]:
-        """Randomly split *trials* into train and test sets."""
+        """Split *trials* into train and test sets.
+
+        Parameters
+        ----------
+        test_frac : float
+            Fraction of trials to hold out for testing.
+        seed : int
+            PRNG seed.
+        stratify : bool, optional
+            If ``True`` (default), split *within each condition* so every
+            condition contributes ``round(test_frac * K_c)`` test trials.  This
+            keeps every condition represented in both splits, which matters for
+            per-condition covariance estimators (a plain global split can starve
+            a condition of training trials and make regularised estimators
+            degenerate).  If ``False``, trials are split globally at random.
+        """
         rng = np.random.default_rng(seed)
-        perm = rng.permutation(self.num_trials)
-        n_test = int(round(test_frac * self.num_trials))
-        test_idx, train_idx = perm[:n_test], perm[n_test:]
-        return self.subset(train_idx), self.subset(test_idx)
+        if not stratify:
+            perm = rng.permutation(self.num_trials)
+            n_test = int(round(test_frac * self.num_trials))
+            return self.subset(perm[n_test:]), self.subset(perm[:n_test])
+
+        keys = self.X.reshape(self.num_trials, -1)
+        _, inv = np.unique(keys, axis=0, return_inverse=True)
+        test_idx: list[int] = []
+        for c in range(int(inv.max()) + 1):
+            idx = np.where(inv == c)[0]
+            rng.shuffle(idx)
+            n_test = int(round(test_frac * len(idx)))
+            test_idx.extend(idx[:n_test].tolist())
+        test_mask = np.zeros(self.num_trials, dtype=bool)
+        test_mask[test_idx] = True
+        return self.subset(~test_mask), self.subset(test_mask)
 
     def holdout_conditions(
         self, frac: float = 0.2, seed: int = 0
