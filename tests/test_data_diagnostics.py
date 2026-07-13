@@ -1,4 +1,4 @@
-"""Tests for data utilities, baseline estimators, and diagnostics."""
+"""Tests for data utilities and diagnostics."""
 
 from __future__ import annotations
 
@@ -7,15 +7,11 @@ import jax.random as jxr
 import numpy as np
 
 from wishart_process_em import (
-    ConditionCovarianceEstimator,
     NeuralDataset,
     covariance_operator_norm_error,
     fisher_information,
-    gaussian_loglike,
-    grand_empirical_covariance,
     group_by_condition,
     heldout_loglike,
-    ledoit_wolf_covariance,
     qda_accuracy,
     scale_conditions,
 )
@@ -92,58 +88,6 @@ def test_scale_conditions_periodic():
     X = np.array([0.0, 90.0, 180.0, 270.0])[:, None]
     Xs, _ = scale_conditions(X, periods={0: 360.0})
     np.testing.assert_allclose(Xs[:, 0], [0.0, 0.25, 0.5, 0.75], atol=1e-8)
-
-
-# --------------------------------------------------------------------------- #
-# Baselines
-# --------------------------------------------------------------------------- #
-def test_grand_and_ledoit_wolf_shapes():
-    rng = np.random.default_rng(0)
-    groups = [rng.normal(size=(20, 4)) for _ in range(5)]
-    gc = grand_empirical_covariance(groups)
-    assert gc.shape == (4, 4)
-    lw = ledoit_wolf_covariance(groups[0])
-    assert lw.shape == (4, 4)
-    np.testing.assert_allclose(lw, lw.T, atol=1e-10)
-
-
-def test_ledoit_wolf_is_positive_definite_for_tiny_samples():
-    # With very few samples (K < N) Ledoit-Wolf shrinkage can collapse to ~0;
-    # the estimate must still be positive definite (Cholesky must succeed).
-    rng = np.random.default_rng(1)
-    for k in (2, 3, 5):
-        cov = ledoit_wolf_covariance(rng.normal(size=(k, 12)))
-        np.linalg.cholesky(cov)  # raises if not positive definite
-        assert np.linalg.eigvalsh(cov).min() > 0
-
-
-def test_gaussian_loglike_matches_scipy():
-    from scipy.stats import multivariate_normal
-
-    rng = np.random.default_rng(0)
-    a = rng.normal(size=(3, 3))
-    cov = a @ a.T + np.eye(3)
-    mean = np.array([0.5, -1.0, 2.0])
-    y = np.array([1.0, 0.0, 1.5])
-    got = gaussian_loglike(y, mean, cov)[0]
-    assert np.isclose(got, multivariate_normal.logpdf(y, mean, cov))
-
-
-def test_gaussian_loglike_singular_is_neginf():
-    y = np.ones((2, 3))
-    mean = np.zeros(3)
-    singular = np.outer(np.ones(3), np.ones(3))  # rank 1
-    assert np.all(np.isneginf(gaussian_loglike(y, mean, singular)))
-
-
-def test_condition_estimator_fit_predict():
-    ds = _toy_dataset()
-    est = ConditionCovarianceEstimator("ledoit_wolf").fit(ds.Y, ds.X)
-    means, covs = est.predict(np.linspace(0, 1, 8, endpoint=False))
-    assert means.shape == (8, 5)
-    assert covs.shape == (8, 5, 5)
-    ll = est.loglike(ds.Y[:10], ds.X[:10])
-    assert ll.shape == (10,)
 
 
 # --------------------------------------------------------------------------- #

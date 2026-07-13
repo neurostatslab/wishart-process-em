@@ -7,15 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- **Ledoit-Wolf (and the regularised baselines) are no longer spuriously
-  singular.** For very small per-condition samples, sklearn's Ledoit-Wolf
-  shrinkage can collapse to ~0 and return the singular empirical covariance,
-  giving `-inf` held-out log-likelihood. `ledoit_wolf_covariance` now guarantees
-  a positive-definite result by clipping the smallest eigenvalue to a tiny
-  fraction of the largest (a no-op when already well-conditioned).
-
 ### Changed
 
 - `NeuralDataset.train_test_split` now **stratifies by condition** by default
@@ -25,6 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Classical baseline estimators moved out of the package into
+  `examples/baselines.py`.** The empirical / grand / Ledoit-Wolf /
+  weighted-average covariance estimators, `ConditionCovarianceEstimator`, and
+  `gaussian_loglike` are comparison code, not part of the Wishart process model,
+  and are no longer importable from `wishart_process_em`. The example version of
+  Ledoit-Wolf is guaranteed positive-definite (sklearn's shrinkage can collapse
+  to 0 on tiny samples, previously giving `-inf` held-out log-likelihood).
+  `grand_covariance` (used for scale-matrix initialisation) remains in the
+  package.
+- Removed the `gratings_interpolation.py` example.
 - **`TruncatedFourierBasis` class removed.** Models now consume a
   [nemos](https://github.com/flatironinstitute/nemos) basis object directly
   (e.g. `nemos.basis.FourierEval`).

@@ -36,7 +36,7 @@ cd wishart-process-em
 pip install -e ".[dev]"
 ```
 
-Requires Python ≥ 3.12 (following [nemos](https://github.com/flatironinstitute/nemos), on which the basis functions are built). For plotting and baselines, install the extras:
+Requires Python ≥ 3.12 (following [nemos](https://github.com/flatironinstitute/nemos), on which the basis functions are built). For plotting (and the comparison baselines in `examples/`), install the extras:
 `pip install "wishart-process-em[viz]"`.
 
 ## Quickstart
@@ -100,7 +100,7 @@ See `wishart-em --help` and the [documentation](https://neurostatslab.github.io/
 | Covariance `Σ(x)=L(UUᵀ+Λ)Lᵀ` | `covariance`, `model` | Rank-`P` factor, optional diagonal, optional scale matrix. |
 | Marginal likelihood | `inference` | Conjugate / QMC / Laplace estimators. |
 | Fitting | `fit` | `optax`-based, stochastic-EM for count models. |
-| Baselines & metrics | `baselines`, `diagnostics` | Ledoit-Wolf, grand-empirical; held-out LL, Fisher information, QDA. |
+| Metrics & diagnostics | `diagnostics` | Held-out log-likelihood, Fisher information, QDA decoding. |
 
 See [`docs/model.md`](docs/model.md) for the full mathematical description.
 

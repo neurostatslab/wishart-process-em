@@ -24,7 +24,6 @@ import numpy as np
 import optax
 from tqdm.auto import trange
 
-from .baselines import grand_empirical_covariance
 from .covariance import WPParams, softplus_inverse
 from .data import group_by_condition
 from .inference import dataset_marginal_loglike
@@ -81,8 +80,10 @@ def grand_covariance(Y: jnp.ndarray, X: jnp.ndarray | None = None) -> jnp.ndarra
     Y = np.asarray(Y)
     if X is None:
         return jnp.asarray(np.cov(Y, rowvar=False))
+    # Pool within-condition-centred trials (eq. 2 of the paper).
     _, groups = group_by_condition(Y, X)
-    return jnp.asarray(grand_empirical_covariance(groups))
+    centered = np.concatenate([g - g.mean(axis=0, keepdims=True) for g in groups])
+    return jnp.asarray(np.cov(centered, rowvar=False, bias=True))
 
 
 def fit(

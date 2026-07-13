@@ -37,7 +37,8 @@ cd wishart-process-em
 pip install -e ".[dev]"
 ```
 
-Requires Python ≥ 3.10. For plotting and baselines, install the extras:
+Requires Python ≥ 3.12 (following nemos). For plotting (and the comparison
+baselines in `examples/`), install the extras:
 `pip install "wishart-process-em[viz]"`.
 
 ## Quickstart
