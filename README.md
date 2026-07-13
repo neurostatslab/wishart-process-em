@@ -10,7 +10,7 @@ with **few trials per condition**.
 
 This package is a self-contained [JAX](https://github.com/google/jax)
 implementation of the Wishart process model of
-[Nejatbakhsh, Garon & Williams (2023)](https://arxiv.org/abs/2305.04086), with
+[Nejatbakhsh, Garon & Williams (2023; NeurIPS)](https://arxiv.org/abs/2308.11824), with
 two deliberate differences from the reference implementation:
 
 1. **Finite (Fourier-feature) basis.** Each latent Gaussian process is
