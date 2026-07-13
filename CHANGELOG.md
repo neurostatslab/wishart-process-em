@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Ledoit-Wolf (and the regularised baselines) are no longer spuriously
+  singular.** For very small per-condition samples, sklearn's Ledoit-Wolf
+  shrinkage can collapse to ~0 and return the singular empirical covariance,
+  giving `-inf` held-out log-likelihood. `ledoit_wolf_covariance` now guarantees
+  a positive-definite result by clipping the smallest eigenvalue to a tiny
+  fraction of the largest (a no-op when already well-conditioned).
+
+### Changed
+
+- `NeuralDataset.train_test_split` now **stratifies by condition** by default
+  (`stratify=True`): each condition contributes `round(test_frac * K_c)` test
+  trials, so no condition is starved of training trials. Pass `stratify=False`
+  for the previous global random split.
+
 ### Removed
 
 - **`TruncatedFourierBasis` class removed.** Models now consume a

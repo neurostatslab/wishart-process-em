@@ -54,9 +54,27 @@ def ledoit_wolf_covariance(group: np.ndarray) -> np.ndarray:
         from sklearn.covariance import ledoit_wolf
 
         cov, _ = ledoit_wolf(group)
-        return cov
     except ImportError:
-        return _ledoit_wolf_fallback(group)
+        cov = _ledoit_wolf_fallback(group)
+    return _ensure_positive_definite(cov)
+
+
+def _ensure_positive_definite(cov: np.ndarray, rel_floor: float = 1e-8) -> np.ndarray:
+    """Symmetrise and guarantee a positive-definite covariance.
+
+    Ledoit-Wolf's data-driven shrinkage can collapse to ~0 for very small
+    samples (e.g. two trials in a condition), returning the singular empirical
+    covariance.  Since the point of a shrinkage estimator is to be
+    well-conditioned, we clip its smallest eigenvalue up to a tiny fraction of
+    the largest (a no-op when the estimate is already well-conditioned).
+    """
+    n = cov.shape[0]
+    cov = 0.5 * (cov + cov.T)
+    eigvals = np.linalg.eigvalsh(cov)
+    floor = rel_floor * max(float(eigvals[-1]), 1.0)
+    if eigvals[0] < floor:
+        cov = cov + (floor - eigvals[0]) * np.eye(n)
+    return cov
 
 
 def _ledoit_wolf_fallback(X: np.ndarray) -> np.ndarray:

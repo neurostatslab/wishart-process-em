@@ -39,11 +39,22 @@ def test_dataset_basic_props():
     assert ds.condition_dim == 1
 
 
-def test_train_test_split_partitions():
+def test_train_test_split_global_partitions():
     ds = _toy_dataset()
-    tr, te = ds.train_test_split(0.25, seed=1)
+    tr, te = ds.train_test_split(0.25, seed=1, stratify=False)
     assert tr.num_trials + te.num_trials == ds.num_trials
     assert te.num_trials == round(0.25 * ds.num_trials)
+
+
+def test_train_test_split_stratified_balances_conditions():
+    ds = _toy_dataset()  # 8 conditions x 15 trials
+    tr, te = ds.train_test_split(0.25, seed=1)  # stratify=True by default
+    assert tr.num_trials + te.num_trials == ds.num_trials
+    # every condition contributes round(0.25 * 15) = 4 test trials
+    _, test_groups = group_by_condition(te.Y, te.X)
+    assert all(g.shape[0] == round(0.25 * 15) for g in test_groups)
+    # and every condition is present in training
+    assert len(group_by_condition(tr.Y, tr.X)[0]) == 8
 
 
 def test_holdout_conditions_are_disjoint():
@@ -94,6 +105,16 @@ def test_grand_and_ledoit_wolf_shapes():
     lw = ledoit_wolf_covariance(groups[0])
     assert lw.shape == (4, 4)
     np.testing.assert_allclose(lw, lw.T, atol=1e-10)
+
+
+def test_ledoit_wolf_is_positive_definite_for_tiny_samples():
+    # With very few samples (K < N) Ledoit-Wolf shrinkage can collapse to ~0;
+    # the estimate must still be positive definite (Cholesky must succeed).
+    rng = np.random.default_rng(1)
+    for k in (2, 3, 5):
+        cov = ledoit_wolf_covariance(rng.normal(size=(k, 12)))
+        np.linalg.cholesky(cov)  # raises if not positive definite
+        assert np.linalg.eigvalsh(cov).min() > 0
 
 
 def test_gaussian_loglike_matches_scipy():
