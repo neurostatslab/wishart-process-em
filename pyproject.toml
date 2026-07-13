@@ -1,0 +1,89 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "wishart-process-em"
+version = "0.1.0"
+description = "Finite-basis Wishart process models of neural noise covariance, fit by marginal-likelihood (QMC + Laplace) EM."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Amin Nejatbakhsh" },
+    { name = "Isabel Garon" },
+    { name = "Alex H. Williams", email = "aw4614@nyu.edu" },
+]
+keywords = [
+    "neuroscience",
+    "wishart-process",
+    "gaussian-process",
+    "covariance-estimation",
+    "noise-correlations",
+    "jax",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "jax>=0.4.20",
+    "optax>=0.1.7",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "tqdm>=4.64",
+]
+
+[project.optional-dependencies]
+viz = ["matplotlib>=3.6", "scikit-learn>=1.2"]
+cli = ["pyyaml>=6.0"]
+docs = ["mkdocs-material>=9.5", "mkdocstrings[python]>=0.24"]
+dev = [
+    "pytest>=7.4",
+    "pytest-xdist>=3.5",
+    "ruff>=0.4",
+    "matplotlib>=3.6",
+    "scikit-learn>=1.2",
+    "pyyaml>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/neurostatslab/wishart-process-em"
+Repository = "https://github.com/neurostatslab/wishart-process-em"
+Issues = "https://github.com/neurostatslab/wishart-process-em/issues"
+"Paper (NeurIPS 2023)" = "https://arxiv.org/abs/2305.04086"
+
+[project.scripts]
+wishart-em = "wishart_process_em.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wishart_process_em"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "NPY"]
+ignore = [
+    "E741",   # ambiguous variable names (l, L are natural for matrices here)
+    "E501",   # line length handled by formatter
+    "B008",   # function calls in defaults (used for jax defaults)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# __init__ enables float64 before re-exporting the public API.
+"src/wishart_process_em/__init__.py" = ["E402", "F401"]
+"tests/*" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]

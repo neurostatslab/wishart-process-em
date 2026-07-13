@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Docs build
+site/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Data & artifacts (do not commit heavy or copyrighted material)
+*.npz
+*.npy
+*.nwb
+*.h5
+*.hdf5
+paper.pdf
+data/
+scratch/
