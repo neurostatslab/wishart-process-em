@@ -864,6 +864,10 @@ corresponding stationary GP prior on <span class="arithmatex">\(f\)</span>. Two 
 differentiable parametric model whose free parameters are just the weights <span class="arithmatex">\(w\)</span>,
 on which we place a standard-normal prior. This is exactly what makes the
 marginal-likelihood / EM inference tractable.</p>
+<p>The Fourier features themselves — frequency enumeration, the <span class="arithmatex">\(N\)</span>-dimensional
+Cartesian product, and evaluation — are provided by
+<a href="https://nemos.readthedocs.io"><code>nemos.basis.FourierEval</code></a>; this package only adds
+the Gaussian-process spectral scaling <span class="arithmatex">\(\tau_k = \sqrt{S(2\pi k)}\)</span>.</p>
 <div class="admonition note">
 <p class="admonition-title">Periodicity</p>
 <p>Inputs <span class="arithmatex">\(x\)</span> are assumed scaled to the unit box <span class="arithmatex">\([0,1]^D\)</span>. Because the
