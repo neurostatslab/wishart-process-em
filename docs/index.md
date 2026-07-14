@@ -77,8 +77,6 @@ the latent integral is then estimated by QMC automatically.
   marginal-likelihood estimators.
 - [Quickstart](quickstart.md) — a longer walkthrough: simulate, fit, predict
   covariance, plot covariance ellipses in PCA space, and the Poisson variant.
-- [Command line](cli.md) — the `wishart-em` CLI for fitting, evaluating, and
-  sampling from the shell.
 - [API reference](api.md) — every public symbol, documented from the source.
 
 ## Citation

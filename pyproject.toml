@@ -42,7 +42,6 @@ dependencies = [
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.6", "scikit-learn>=1.2"]
-cli = ["pyyaml>=6.0"]
 docs = ["mkdocs-material>=9.5", "mkdocstrings[python]>=0.24"]
 dev = [
     "pytest>=7.4",
@@ -50,7 +49,6 @@ dev = [
     "ruff>=0.4",
     "matplotlib>=3.6",
     "scikit-learn>=1.2",
-    "pyyaml>=6.0",
 ]
 
 [project.urls]
@@ -58,9 +56,6 @@ Homepage = "https://github.com/neurostatslab/wishart-process-em"
 Repository = "https://github.com/neurostatslab/wishart-process-em"
 Issues = "https://github.com/neurostatslab/wishart-process-em/issues"
 "Paper (NeurIPS 2023)" = "https://arxiv.org/abs/2308.11824"
-
-[project.scripts]
-wishart-em = "wishart_process_em.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/wishart_process_em"]

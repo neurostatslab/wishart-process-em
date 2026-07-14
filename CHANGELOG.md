@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **The `wishart-em` command-line interface was removed.** Use the Python API
+  (`fit`, `model.predict_cov`, …) directly. Saving / loading fitted models
+  remains available via `wishart_process_em.serialize`.
 - **Classical baseline estimators moved out of the package into
   `examples/baselines.py`.** The empirical / grand / Ledoit-Wolf /
   weighted-average covariance estimators, `ConditionCovarianceEstimator`, and
