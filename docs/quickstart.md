@@ -159,5 +159,4 @@ obs_cov = counts_model.predict_observed_cov(jxr.PRNGKey(4), result.params, grid,
 
 - [Model](model.md) — the math behind the basis, covariance family, and
   estimators.
-- [Command line](cli.md) — run fits, evaluations, and sampling from the shell.
 - [API reference](api.md) — every public function and class.

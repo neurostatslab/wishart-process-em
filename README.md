@@ -74,21 +74,6 @@ model = WishartProcessModel(basis, num_neurons=25, rank=3, likelihood="poisson",
 result = fit(model, counts, X, num_steps=1000)          # uses QMC each step
 ```
 
-## Command line
-
-```bash
-# Fit a model to data stored in an .npz with arrays `Y` (T,N) and `X` (T,D):
-wishart-em fit data.npz --likelihood poisson --rank 3 --steps 1000 -o fit.npz
-
-# Evaluate held-out log-likelihood of a saved fit:
-wishart-em evaluate fit.npz heldout.npz
-
-# Sample synthetic data from a fitted model:
-wishart-em sample fit.npz --trials 500 -o synthetic.npz
-```
-
-See `wishart-em --help` and the [documentation](https://neurostatslab.github.io/wishart-process-em).
-
 ## How it works
 
 | Component | Module | Notes |

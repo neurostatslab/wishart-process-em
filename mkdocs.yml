@@ -9,7 +9,6 @@ nav:
   - Home: index.md
   - Model: model.md
   - Quickstart: quickstart.md
-  - Command line: cli.md
   - API reference: api.md
 
 theme:
